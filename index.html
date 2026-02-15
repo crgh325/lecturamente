@@ -291,7 +291,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;height:4p
 <body>
 <div id="app">
   <div class="topbar">
-    <div class="logo">LecturaMente</div>
+    <div class="logo" onclick="go('home')" style="cursor:pointer">LecturaMente</div>
     <div class="streak" id="streakEl">🔥 0 días</div>
   </div>
   <div id="main"></div>
@@ -650,7 +650,12 @@ ${tx.qs.map((q,i)=>`
 <button class="btn btn-s" onclick="go('comp')">Cancelar</button>`;
 }
 
-function selA(qi,oi){C.ans[qi]=oi;go('comp',C.textId);}
+function selA(qi,oi){
+  C.ans[qi]=oi;
+  const sp=document.getElementById('main').scrollTop;
+  go('comp',C.textId);
+  setTimeout(()=>{document.getElementById('main').scrollTop=sp;},25);
+}
 function subC(){
   const tx=TX.find(t=>t.id===C.textId);
   if(Object.keys(C.ans).length<tx.qs.length){toast(`Responde todas (${Object.keys(C.ans).length}/${tx.qs.length})`);return;}
@@ -663,6 +668,19 @@ function subC(){
 /* ══════════════════════════════════════════
    OJOS
 ══════════════════════════════════════════ */
+/* ── AUDIO BEEP ── */
+function playBeep(freq,dur){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.frequency.value=freq||880;osc.type='sine';
+    gain.gain.setValueAtTime(0.35,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+(dur||0.6));
+    osc.start(ctx.currentTime);osc.stop(ctx.currentTime+(dur||0.6));
+  }catch(e){}
+}
+
 function rEyes(){
   if(E.phase==='menu'){
     return`
@@ -682,6 +700,29 @@ ${EYES_EX.map((e,i)=>`
 </div>
 <button class="btn btn-p" onclick="startEyes()">Comenzar rutina</button>`;
   }
+
+  if(E.phase==='instructions'){
+    const ex=EYES_EX[E.idx];
+    return`
+<div class="back-row"><div><div class="title">Ejercicios oculares</div><div class="sub">Ejercicio ${E.idx+1} de ${EYES_EX.length}</div></div></div>
+<div class="ex-list" style="margin-bottom:16px">
+${EYES_EX.map((e,i)=>`
+<div class="ex-item ${i===E.idx?'cur':''} ${i<E.idx?'done-ex':''}">
+  <div class="ex-ico">${e.ico}</div>
+  <div><div class="ex-nm">${e.name}</div><div class="ex-dt">${e.dur}s</div></div>
+  <span class="ex-st ${i===E.idx?'a':i<E.idx?'d':''}">${i===E.idx?'▶ Siguiente':i<E.idx?'✓':'○'}</span>
+</div>`).join('')}
+</div>
+<div class="card glow" style="text-align:center;padding:28px;margin-bottom:18px">
+  <div style="font-size:52px;margin-bottom:12px">${ex.ico}</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;margin-bottom:8px">${ex.name}</div>
+  <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px">${ex.instr}</div>
+  <div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:12px;color:var(--muted)">⏱ Duración: <strong style="color:var(--accent)">${ex.dur} segundos</strong></div>
+</div>
+<button class="btn btn-p" onclick="beginExercise()">▶ Comenzar ejercicio</button>
+<button class="btn btn-s" onclick="E.phase='menu';go('eyes')">Cancelar rutina</button>`;
+  }
+
   if(E.phase==='done'){
     const p=gp();p.eyes=(p.eyes||0)+1;sp(p);
     return`
@@ -693,13 +734,15 @@ ${EYES_EX.map((e,i)=>`
   <button class="btn btn-s" onclick="go('home')">Volver al inicio</button>
 </div>`;
   }
+
+  /* phase === 'ex' */
   const ex=EYES_EX[E.idx];
   let dotH='';
   if(ex.anim==='far')dotH=`<div class="eye-far">🏔️</div>`;
   else dotH=`<div class="dot ${ex.anim}"></div>`;
   return`
 <div class="back-row">
-  <div><div class="title">Ejercicios oculares</div><div class="sub">Ejercicio ${E.idx+1} de ${EYES_EX.length}</div></div>
+  <div><div class="title">Ejercicios oculares</div><div class="sub">Ejercicio ${E.idx+1} de ${EYES_EX.length} · ${ex.dur}s</div></div>
 </div>
 <div class="eye-box">
   <div class="eye-instr">${ex.name}</div>
@@ -719,18 +762,32 @@ ${EYES_EX.map((e,i)=>`
 <button class="btn btn-s" onclick="skipEye()">Saltar ejercicio</button>`;
 }
 
-function startEyes(){E.idx=0;E.phase='ex';E.t=EYES_EX[0].dur;go('eyes');runEyeTimer();}
+function startEyes(){E.idx=0;E.phase='instructions';E.t=EYES_EX[0].dur;go('eyes');}
+function beginExercise(){E.phase='ex';go('eyes');runEyeTimer();}
 function runEyeTimer(){
   if(E.ivl)clearInterval(E.ivl);
   E.ivl=setInterval(()=>{
     E.t--;const el=document.getElementById('eT');if(el)el.textContent=E.t;
-    if(E.t<=0){clearInterval(E.ivl);E.ivl=null;E.idx++;
-      if(E.idx>=EYES_EX.length){E.phase='done';go('eyes');}
-      else{E.t=EYES_EX[E.idx].dur;toast(EYES_EX[E.idx].name);go('eyes');runEyeTimer();}
+    if(E.t<=0){
+      clearInterval(E.ivl);E.ivl=null;
+      playBeep(660,0.8);
+      E.idx++;
+      if(E.idx>=EYES_EX.length){
+        setTimeout(()=>{E.phase='done';go('eyes');},600);
+      } else {
+        E.t=EYES_EX[E.idx].dur;
+        E.phase='instructions';
+        setTimeout(()=>{go('eyes');},600);
+      }
     }
   },1000);
 }
-function skipEye(){if(E.ivl)clearInterval(E.ivl);E.idx++;if(E.idx>=EYES_EX.length){E.phase='done';go('eyes');}else{E.t=EYES_EX[E.idx].dur;go('eyes');runEyeTimer();}}
+function skipEye(){
+  if(E.ivl)clearInterval(E.ivl);E.ivl=null;
+  E.idx++;
+  if(E.idx>=EYES_EX.length){E.phase='done';go('eyes');}
+  else{E.t=EYES_EX[E.idx].dur;E.phase='instructions';go('eyes');}
+}
 
 /* ══════════════════════════════════════════
    BIBLIOTECA
