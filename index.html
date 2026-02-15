@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>LecturaMente</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f14;
+  --surface:#131920;
+  --surface2:#1a2130;
+  --border:#1f2d3d;
+  --border2:#2a3d52;
+  --accent:#3ecf8e;
+  --accent-dim:rgba(62,207,142,0.12);
+  --accent2:#6c9df5;
+  --accent2-dim:rgba(108,157,245,0.12);
+  --warm:#f5c842;
+  --warm-dim:rgba(245,200,66,0.1);
+  --danger:#f77f7f;
+  --success:#56e07a;
+  --text:#dde5ef;
+  --text2:#a8b9cc;
+  --muted:#5a6e82;
+  --radius:14px;
+  --radius-sm:10px;
+  --shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:14px;line-height:1.5;}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100vh;max-width:640px;margin:0 auto;position:relative;}
+
+/* ── TOPBAR ── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px 12px;
+  background:linear-gradient(180deg,var(--surface) 80%,transparent);
+  z-index:50;flex-shrink:0;
+}
+.logo{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;letter-spacing:0.3px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.streak{
+  display:flex;align-items:center;gap:5px;
+  background:var(--warm-dim);border:1px solid rgba(245,200,66,0.22);
+  border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;color:var(--warm);
+}
+
+/* ── MAIN ── */
+#main{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 20px 100px;scroll-behavior:smooth;}
+#main::-webkit-scrollbar{width:3px;}
+#main::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* ── BOTTOMNAV ── */
+.bottomnav{
+  position:absolute;bottom:0;left:0;right:0;
+  display:flex;background:var(--surface);
+  border-top:1px solid var(--border);
+  padding-bottom:env(safe-area-inset-bottom,8px);
+  z-index:50;flex-shrink:0;
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:10px 4px 8px;background:transparent;border:none;cursor:pointer;
+  color:var(--muted);font-family:'Sora',sans-serif;font-size:10px;font-weight:500;
+  transition:color .2s;position:relative;
+}
+.nav-btn.active{color:var(--accent);}
+.nav-btn.active::after{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:20px;height:2px;background:var(--accent);border-radius:2px;
+  box-shadow:0 0 8px var(--accent);
+}
+.nav-icon{font-size:19px;}
+
+/* ── GENERIC COMPONENTS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.card.glow{border-color:rgba(62,207,142,0.28);background:linear-gradient(135deg,rgba(62,207,142,0.05),rgba(108,157,245,0.05));}
+
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:var(--radius-sm);cursor:pointer;
+  font-family:'Sora',sans-serif;font-size:14px;font-weight:500;transition:opacity .15s,transform .1s;}
+.btn:active{transform:scale(0.98);}
+.btn-p{background:linear-gradient(135deg,var(--accent),#2db877);color:#0b1a12;}
+.btn-s{background:var(--surface2);color:var(--text);border:1px solid var(--border2);margin-top:8px;}
+
+.sec{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.8px;color:var(--muted);margin-bottom:10px;}
+
+.tag{font-size:10px;padding:2px 9px;border-radius:4px;font-weight:500;}
+.tag-lit{background:rgba(245,200,66,0.12);color:var(--warm);}
+.tag-sci{background:var(--accent2-dim);color:var(--accent2);}
+.tag-phi{background:var(--accent-dim);color:var(--accent);}
+.tag-his{background:rgba(247,127,127,0.12);color:var(--danger);}
+.tag-es{background:var(--accent-dim);color:var(--accent);}
+.tag-it{background:rgba(247,127,127,0.1);color:var(--danger);}
+
+/* ── SCREEN ANIMATION ── */
+.screen-in{animation:sIn .22s ease;}
+@keyframes sIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── HOME ── */
+.greeting h2{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:300;margin-bottom:3px;}
+.greeting p{color:var(--text2);font-size:12px;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:16px 0;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px 8px;text-align:center;}
+.sv{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sl{font-size:10px;color:var(--muted);margin-top:1px;}
+.modules{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+.mod{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .2s,transform .15s;}
+.mod:hover{border-color:var(--accent);transform:translateY(-2px);}
+.mod.full{grid-column:1/-1;}
+.mod.hero{background:linear-gradient(135deg,rgba(62,207,142,0.07),rgba(108,157,245,0.07));border-color:rgba(62,207,142,0.25);}
+.mod-icon{font-size:24px;margin-bottom:7px;}
+.mod-name{font-size:13px;font-weight:600;margin-bottom:3px;}
+.mod-desc{font-size:11px;color:var(--text2);line-height:1.5;}
+.tip{background:var(--warm-dim);border:1px solid rgba(245,200,66,0.2);border-radius:var(--radius);padding:15px;}
+.tip-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--warm);margin-bottom:5px;}
+.tip-txt{font-size:12px;color:var(--text);line-height:1.7;font-style:italic;}
+
+/* ── RSVP ── */
+.back-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.back-btn{background:transparent;border:none;color:var(--text2);font-size:22px;cursor:pointer;padding:0;}
+.back-row .title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;}
+.back-row .sub{font-size:11px;color:var(--muted);}
+
+.rsvp-display{
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:28px 16px 20px;text-align:center;margin-bottom:18px;
+  min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+}
+.rsvp-word{
+  font-family:'Cormorant Garamond',serif;font-size:46px;font-weight:300;
+  min-height:60px;display:flex;align-items:center;justify-content:center;
+  transition:opacity .04s;letter-spacing:1px;
+}
+.orp{color:var(--accent);}
+.rsvp-bar-wrap{width:100%;height:3px;background:var(--border);border-radius:3px;overflow:hidden;}
+.rsvp-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .4s;}
+.rsvp-meta{font-size:11px;color:var(--muted);}
+.controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:18px;}
+.cb{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);
+  color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s;}
+.cb:hover{border-color:var(--accent);}
+.cb.play{width:60px;height:60px;background:var(--accent);color:#0b1a12;border:none;font-size:24px;
+  box-shadow:0 0 20px rgba(62,207,142,0.35);}
+.wpm-row{margin-bottom:16px;}
+.wpm-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:7px;}
+.wpm-lbl span{color:var(--accent);font-weight:500;}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;height:4px;}
+
+.text-opt{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+  transition:border-color .2s;}
+.text-opt:hover{border-color:var(--accent);}
+.tot{font-size:13px;font-weight:500;margin-bottom:2px;}
+.toa{font-size:11px;color:var(--muted);}
+
+/* ── COMPREHENSION ── */
+.read-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin-bottom:18px;
+  font-family:'Cormorant Garamond',serif;font-size:16px;line-height:1.95;color:#c0d0e0;
+}
+.read-hdr{font-family:'Sora',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;}
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;}
+.q-num{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px;}
+.q-txt{font-size:13px;font-weight:500;margin-bottom:10px;line-height:1.55;}
+.opts{display:flex;flex-direction:column;gap:7px;}
+.opt{padding:10px 13px;border-radius:8px;border:1px solid var(--border);background:transparent;
+  color:var(--text);font-family:'Sora',sans-serif;font-size:12px;text-align:left;cursor:pointer;
+  transition:all .15s;line-height:1.4;}
+.opt:hover{border-color:var(--accent2);background:var(--accent2-dim);}
+.opt.sel{border-color:var(--accent2);background:var(--accent2-dim);color:var(--accent2);}
+.opt.ok{border-color:var(--success);background:rgba(86,224,122,0.1);color:var(--success);}
+.opt.bad{border-color:var(--danger);background:rgba(247,127,127,0.1);color:var(--danger);}
+.score-box{background:linear-gradient(135deg,rgba(62,207,142,0.08),rgba(108,157,245,0.08));
+  border:1px solid rgba(62,207,142,0.25);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:18px;}
+.score-n{font-family:'Cormorant Garamond',serif;font-size:58px;font-weight:300;color:var(--accent);}
+.score-l{font-size:12px;color:var(--text2);margin-top:2px;}
+.score-msg{font-size:13px;color:var(--text2);margin-top:8px;}
+
+/* ── EYES ── */
+.eye-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:28px 16px;margin-bottom:18px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:200px;gap:14px;overflow:hidden;position:relative;
+}
+.eye-instr{font-size:15px;font-weight:500;}
+.eye-sub{font-size:11px;color:var(--muted);text-align:center;max-width:260px;}
+.dot{width:18px;height:18px;border-radius:50%;background:var(--accent);box-shadow:0 0 22px rgba(62,207,142,0.6);}
+.dot.eight{animation:eight 5s infinite ease-in-out;}
+@keyframes eight{0%{transform:translate(0,0)}12%{transform:translate(65px,-38px)}25%{transform:translate(0,-48px)}37%{transform:translate(-65px,-38px)}50%{transform:translate(0,0)}62%{transform:translate(65px,38px)}75%{transform:translate(0,48px)}87%{transform:translate(-65px,38px)}100%{transform:translate(0,0)}}
+.dot.conv{animation:conv 3s infinite ease-in-out;background:var(--accent2);box-shadow:0 0 22px rgba(108,157,245,0.6);}
+@keyframes conv{0%,100%{transform:scale(0.4);opacity:0.4}50%{transform:scale(2);opacity:1}}
+.dot.circ{animation:circ 3.5s infinite linear;}
+@keyframes circ{0%{transform:rotate(0deg) translateX(55px) rotate(0deg)}100%{transform:rotate(360deg) translateX(55px) rotate(-360deg)}}
+.dot.palm{animation:palm 2.5s infinite ease-in-out;background:var(--warm);box-shadow:0 0 28px rgba(245,200,66,0.5);}
+@keyframes palm{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(2.2);opacity:0.2}}
+.eye-far{font-size:52px;animation:far 3s infinite ease-in-out;}
+@keyframes far{0%,100%{opacity:0.4;transform:scale(0.85)}50%{opacity:1;transform:scale(1)}}
+
+.timer-big{font-family:'Cormorant Garamond',serif;font-size:54px;font-weight:300;text-align:center;color:var(--accent);}
+.timer-sub{text-align:center;font-size:11px;color:var(--muted);margin-bottom:16px;}
+.ex-list{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
+.ex-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px;display:flex;align-items:center;gap:10px;transition:border-color .2s;}
+.ex-item.cur{border-color:var(--accent);background:var(--accent-dim);}
+.ex-item.done-ex{opacity:0.4;}
+.ex-ico{font-size:20px;}
+.ex-nm{font-size:12px;font-weight:500;}
+.ex-dt{font-size:10px;color:var(--muted);margin-top:1px;}
+.ex-st{font-size:11px;font-weight:500;margin-left:auto;flex-shrink:0;}
+.ex-st.a{color:var(--accent);}
+.ex-st.d{color:var(--muted);}
+
+/* ── LIBRARY ── */
+.search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;}
+.search input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Sora',sans-serif;font-size:13px;}
+.search input::placeholder{color:var(--muted);}
+.chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{white-space:nowrap;padding:6px 13px;border-radius:20px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:11px;cursor:pointer;font-family:'Sora',sans-serif;
+  transition:all .2s;}
+.chip.on{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+.bk{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:13px;display:flex;gap:11px;cursor:pointer;transition:border-color .2s;margin-bottom:9px;}
+.bk:hover{border-color:var(--accent2);}
+.bk-cov{width:44px;height:62px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.bk-tit{font-size:13px;font-weight:500;margin-bottom:2px;}
+.bk-aut{font-size:11px;color:var(--muted);margin-bottom:7px;}
+.bk-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.bk-rat{font-size:10px;color:var(--muted);}
+
+/* ── PROGRESS ── */
+.pg-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+.pg-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;}
+.pg-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.pg-val{font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--accent);}
+.pg-unit{font-size:11px;color:var(--muted);}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:15px;margin-bottom:12px;}
+.ch-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:14px;}
+.bars{display:flex;align-items:flex-end;gap:5px;height:85px;}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.bf{width:100%;border-radius:4px 4px 0 0;min-height:4px;background:linear-gradient(180deg,var(--accent),rgba(62,207,142,0.25));transition:height .6s ease;}
+.bf.td{background:var(--accent);box-shadow:0 0 10px rgba(62,207,142,0.4);}
+.bl{font-size:9px;color:var(--muted);}
+.str-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px;}
+.sc{aspect-ratio:1;border-radius:5px;border:1px solid var(--border);background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--muted);}
+.sc.d{background:rgba(62,207,142,0.16);border-color:var(--accent);color:var(--accent);}
+.sc.td{background:var(--accent);border-color:var(--accent);color:#0b1a12;font-weight:700;}
+.ach-list{display:flex;flex-direction:column;gap:8px;}
+.ach{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:13px;display:flex;align-items:center;gap:11px;}
+.ach.lk{opacity:0.38;}
+.ach-ico{font-size:24px;}
+.ach-nm{font-size:13px;font-weight:500;}
+.ach-ds{font-size:10px;color:var(--muted);margin-top:1px;}
+.ach-st{font-size:11px;font-weight:600;margin-left:auto;flex-shrink:0;}
+.ach-st.ok{color:var(--accent);}
+.ach-st.no{color:var(--muted);}
+.pb-wrap{height:3px;background:var(--border);border-radius:3px;margin-top:5px;overflow:hidden;}
+.pb-fill{height:100%;background:var(--accent2);border-radius:3px;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;top:76px;left:50%;transform:translateX(-50%);
+  background:var(--surface2);border:1px solid var(--accent);
+  border-radius:var(--radius-sm);padding:10px 18px;font-size:12px;
+  color:var(--text);z-index:999;opacity:0;transition:opacity .25s;
+  pointer-events:none;white-space:nowrap;box-shadow:var(--shadow);
+}
+.toast.on{opacity:1;}
+
+/* ── COMPLETED BADGE ── */
+.done-badge{display:inline-flex;align-items:center;gap:4px;background:var(--accent-dim);
+  border:1px solid rgba(62,207,142,0.3);border-radius:20px;padding:3px 9px;
+  font-size:10px;color:var(--accent);margin-left:6px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="logo">LecturaMente</div>
+    <div class="streak" id="streakEl">🔥 0 días</div>
+  </div>
+  <div id="main"></div>
+  <nav class="bottomnav">
+    <button class="nav-btn active" id="nb-home" onclick="go('home')"><span class="nav-icon">🏠</span>Inicio</button>
+    <button class="nav-btn" id="nb-rsvp" onclick="go('rsvp')"><span class="nav-icon">⚡</span>Velocidad</button>
+    <button class="nav-btn" id="nb-eyes" onclick="go('eyes')"><span class="nav-icon">👁️</span>Ojos</button>
+    <button class="nav-btn" id="nb-lib" onclick="go('lib')"><span class="nav-icon">📚</span>Libros</button>
+    <button class="nav-btn" id="nb-prog" onclick="go('prog')"><span class="nav-icon">📊</span>Progreso</button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   DATOS — TEXTOS CON PREGUNTAS
+══════════════════════════════════════════ */
+const TX=[
+{id:'quijote',title:'Don Quijote de la Mancha',author:'Miguel de Cervantes',lang:'es',cat:'literatura',
+ ico:'⚔️',bg:'rgba(245,200,66,0.1)',rat:'4.9',dif:'Medio',wpm:220,
+ text:'En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero, adarga antigua, rocín flaco y galgo corredor. Una olla de algo más vaca que carnero, salpicón las más noches, duelos y quebrantos los sábados, lentejas los viernes, algún palomino de añadidura los domingos, consumían las tres partes de su hacienda. El resto della concluían sayo de velarte, calzas de velludo para las fiestas con sus pantuflos de lo mismo, y los días de entresemana se honraba con su vellorí de lo más fino. Tenía en su casa una ama que pasaba de los cuarenta, y una sobrina que no llegaba a los veinte, y un mozo de campo y plaza que así ensillaba el rocín como tomaba la podadera. Frisaba la edad de nuestro hidalgo con los cincuenta años; era de complexión recia, seco de carnes, enjuto de rostro, gran madrugador y amigo de la caza. Quieren decir que tenía el sobrenombre de Quijada, o Quesada, que en esto hay alguna diferencia en los autores que deste caso escriben.',
+ qs:[
+  {q:'¿Cuántas partes de su hacienda consumía la alimentación del hidalgo?',o:['La mitad','Las tres cuartas partes','Las tres partes','Todo'],c:2},
+  {q:'¿Qué comía el hidalgo los sábados?',o:['Palomino','Lentejas','Salpicón','Duelos y quebrantos'],c:3},
+  {q:'¿Cómo era físicamente el hidalgo?',o:['Gordo y joven','Seco de carnes y enjuto de rostro','Alto y musculoso','Bajo y grueso'],c:1},
+  {q:'¿Qué edad tenía aproximadamente el ama del hidalgo?',o:['Menos de 20 años','Menos de 30 años','Más de 40 años','Más de 60 años'],c:2}
+ ]},
+{id:'neuro',title:'La neuroplasticidad: el cerebro que se reinventa',author:'Texto de neurociencia curado',lang:'es',cat:'ciencia',
+ ico:'🧠',bg:'rgba(108,157,245,0.1)',rat:'4.8',dif:'Medio',wpm:250,
+ text:'Durante siglos, la ciencia creyó que el cerebro adulto era una estructura fija e inmutable. Hoy sabemos que esta idea estaba completamente equivocada. El cerebro posee una capacidad extraordinaria llamada neuroplasticidad: la habilidad de reorganizarse, formar nuevas conexiones y adaptarse a nuevas experiencias a lo largo de toda la vida. Cada vez que aprendes algo nuevo, neuronas que antes no se comunicaban comienzan a sincronizarse. Repetir una habilidad, leer con atención o practicar un instrumento fortalece esas conexiones hasta hacerlas automáticas. Este proceso fue descrito por el neurocientífico Donald Hebb en 1949 con la frase: las neuronas que se activan juntas, se conectan juntas. Es la base biológica de todo aprendizaje. La lectura regular y activa es uno de los ejercicios más potentes para estimular la neuroplasticidad, ya que activa simultáneamente las áreas visuales, auditivas, lingüísticas y de memoria del cerebro. Investigaciones recientes con resonancia magnética funcional han mostrado que los lectores frecuentes tienen mayor densidad de materia blanca, lo que se traduce en procesamiento de información más rápido y eficiente.',
+ qs:[
+  {q:'¿Qué es la neuroplasticidad?',o:['La rigidez del cerebro adulto','La capacidad del cerebro de reorganizarse y adaptarse','Un tipo de enfermedad neurológica','La velocidad de los reflejos'],c:1},
+  {q:'¿Quién formuló que "las neuronas que se activan juntas, se conectan juntas"?',o:['Einstein','Freud','Donald Hebb','Darwin'],c:2},
+  {q:'¿Por qué la lectura es especialmente beneficiosa para el cerebro?',o:['Relaja el cerebro completamente','Solo activa el área visual','Activa múltiples áreas cerebrales simultáneamente','Reduce la actividad neuronal'],c:2},
+  {q:'¿Qué encontraron las resonancias magnéticas en lectores frecuentes?',o:['Mayor volumen cerebral total','Mayor densidad de materia blanca','Menos conexiones pero más fuertes','El mismo resultado que no lectores'],c:1}
+ ]},
+{id:'estoicos',title:'Los estoicos y el arte de vivir bien',author:'Texto filosófico curado',lang:'es',cat:'filosofia',
+ ico:'🏛️',bg:'rgba(62,207,142,0.08)',rat:'4.7',dif:'Fácil',wpm:240,
+ text:'El estoicismo nació en Atenas alrededor del año 300 antes de Cristo, fundado por Zenón de Citio. Sus seguidores enseñaban que la felicidad no depende de las circunstancias externas, sino de nuestra respuesta interna ante ellas. Una de sus ideas centrales es la dicotomía del control: hay cosas que están en nuestro poder, como nuestros pensamientos, juicios y acciones, y cosas que no lo están, como la opinión ajena, la enfermedad o la muerte. La sabiduría estoica consiste en concentrar toda la energía en lo primero y aceptar con serenidad lo segundo. Marco Aurelio, emperador de Roma y filósofo estoico, practicaba esta filosofía en sus reflexiones íntimas: la fortaleza no viene de controlar el mundo exterior, sino de dominar la propia mente. Epicteto, nacido esclavo, fue uno de los maestros más influyentes del estoicismo. Enseñaba que ninguna circunstancia externa puede robar nuestra libertad interior si elegimos cómo responder. Esta filosofía, lejos de ser un artefacto del pasado, ha influido profundamente en la psicología cognitivo-conductual moderna.',
+ qs:[
+  {q:'¿Quién fundó el estoicismo?',o:['Platón','Aristóteles','Zenón de Citio','Marco Aurelio'],c:2},
+  {q:'¿En qué consiste la "dicotomía del control"?',o:['Controlar todo lo que sucede','Distinguir entre lo que podemos y no podemos controlar','Evitar todas las emociones','Buscar el placer como fin'],c:1},
+  {q:'¿Qué psicología moderna fue influenciada por el estoicismo?',o:['Psicoanálisis','Psicología conductual clásica','Psicología cognitivo-conductual','Psicología Gestalt'],c:2},
+  {q:'¿Quién fue Epicteto?',o:['Un general griego','Un discípulo de Platón','Un esclavo que se convirtió en filósofo estoico influyente','Un matemático persa'],c:2}
+ ]},
+{id:'universo',title:'El universo: del Big Bang a hoy',author:'Texto de astrofísica curado',lang:'es',cat:'ciencia',
+ ico:'🌌',bg:'rgba(108,157,245,0.08)',rat:'4.8',dif:'Medio',wpm:245,
+ text:'Hace aproximadamente 13.800 millones de años ocurrió un evento que cambiaría todo: el Big Bang. En una fracción de segundo infinitesimal, el universo pasó de ser un punto de densidad y temperatura infinitas a comenzar su expansión. Los primeros minutos fueron extremadamente calientes; los átomos aún no existían, solo quarks y electrones flotando en un plasma de energía pura. Trescientos ochenta mil años después, el universo se enfrió lo suficiente para que los electrones se unieran a los núcleos, formando los primeros átomos de hidrógeno y helio. Las galaxias y estrellas tardaron cientos de millones de años más en formarse por gravedad. Hoy, el universo observable contiene aproximadamente dos billones de galaxias. Sin embargo, lo que más asombra a los físicos es que solo el cinco por ciento del universo está compuesto por materia ordinaria: la que forma estrellas, planetas y a nosotros mismos. El veinticinco por ciento es materia oscura y el setenta por ciento restante es energía oscura, ambas completamente desconocidas en su naturaleza.',
+ qs:[
+  {q:'¿Cuántos años tiene el universo aproximadamente?',o:['4.500 millones','6.000 millones','13.800 millones','100.000 millones'],c:2},
+  {q:'¿Cuánto tiempo después del Big Bang se formaron los primeros átomos?',o:['En el primer segundo','A los 380.000 años','A los 100 millones de años','A los 1.000 años'],c:1},
+  {q:'¿Qué porcentaje del universo es materia ordinaria?',o:['25%','70%','50%','5%'],c:3},
+  {q:'¿Cuántas galaxias contiene el universo observable?',o:['200 millones','Dos billones','Un millón','Cien mil'],c:1}
+ ]},
+{id:'dante',title:'Divina Commedia — Inferno, Canto I',author:'Dante Alighieri',lang:'it',cat:'letteratura',
+ ico:'🔥',bg:'rgba(247,127,127,0.08)',rat:'5.0',dif:'Avanzato',wpm:180,
+ text:"Nel mezzo del cammin di nostra vita mi ritrovai per una selva oscura, ché la diritta via era smarrita. Ahi quanto a dir qual era è cosa dura esta selva selvaggia e aspra e forte che nel pensier rinova la paura! Tant è amara che poco è più morte; ma per trattar del ben ch io vi trovai, dirò de l altre cose ch i ho scorte. Io non so ben ridir com i v intrai, tant era pien di sonno a quel punto che la verace via abbandonai. Ma poi ch i fui al piè d un colle giunto, là dove terminava quella valle che m aveva di paura il cor compunto, guardai in alto e vidi le sue spalle vestite già de raggi del pianeta che mena dritto altrui per ogne calle. Allor fu la paura un poco queta, che nel lago del cor m era durata la notte ch i passai con tanta pieta.",
+ qs:[
+  {q:'Dove si ritrova Dante all\'inizio del poema?',o:['In un deserto','In una selva oscura','Su una montagna','In una città'],c:1},
+  {q:'Come descrive Dante la selva?',o:['Bella e luminosa','Silenziosa e pacifica','Selvaggia, aspra e forte','Grande e vuota'],c:2},
+  {q:'Cosa vede Dante guardando in alto verso il colle?',o:['Le stelle','Un fiume','Il sole che illumina le spalle del colle','Un castello'],c:2},
+  {q:'Qual era il problema di Dante quando entrò nella selva?',o:['Era malato','Era inseguito da nemici','Non riconosceva il luogo','Era addormentato e aveva perso la via retta'],c:3}
+ ]},
+{id:'rinascimento',title:'Il Rinascimento: la rinascita dell\'uomo',author:'Testo storico-culturale curato',lang:'it',cat:'storia',
+ ico:'🎨',bg:'rgba(62,207,142,0.07)',rat:'4.7',dif:'Medio',wpm:210,
+ text:"Il Rinascimento fu un movimento culturale e artistico che fiorì in Italia tra il XIV e il XVI secolo, partendo principalmente da Firenze. Al centro di questa rivoluzione intellettuale c'era l'umanesimo: la convinzione che l'essere umano fosse la misura di tutte le cose, capace di comprendere il mondo attraverso la ragione e l'osservazione. Artisti come Leonardo da Vinci, Michelangelo e Raffaello ridefinirono completamente i confini dell'arte. Leonardo incarnava l'ideale del cosiddetto uomo universale: pittore, scultore, architetto, ingegnere e scienziato allo stesso tempo. I suoi taccuini rivelano una mente che non conosceva confini tra arte e scienza. Il Rinascimento non fu solo arte: la stampa a caratteri mobili di Gutenberg facilitò la diffusione delle idee in tutta Europa, mentre pensatori come Niccolò Machiavelli introducevano una nuova forma razionale di analizzare la politica. Fu un'epoca che cambiò per sempre il modo in cui l'Europa pensava se stessa e il suo posto nel mondo.",
+ qs:[
+  {q:'Dove iniziò principalmente il Rinascimento?',o:['Roma','Venezia','Firenze','Milano'],c:2},
+  {q:'Cosa rappresentava l\'umanesimo rinascimentale?',o:['La devozione religiosa assoluta','La centralità dell\'uomo e della ragione','Il ritorno alla vita rurale','Lo studio degli animali'],c:1},
+  {q:'Chi era il "uomo universale" per eccellenza del Rinascimento?',o:['Raffaello','Michelangelo','Machiavelli','Leonardo da Vinci'],c:3},
+  {q:'Quale invenzione facilitò la diffusione delle idee rinascimentali in Europa?',o:['Il telescopio','La bussola','La stampa a caratteri mobili','La polvere da sparo'],c:2}
+ ]},
+{id:'evolucion',title:'Darwin y el árbol de la vida',author:'Texto de biología evolutiva curado',lang:'es',cat:'ciencia',
+ ico:'🦎',bg:'rgba(62,207,142,0.06)',rat:'4.8',dif:'Medio',wpm:245,
+ text:'En 1859, Charles Darwin publicó El origen de las especies, obra que cambió para siempre nuestra comprensión de la vida. Su idea central era sencilla pero revolucionaria: todas las formas de vida descienden de antepasados comunes y se transforman a lo largo del tiempo mediante un proceso llamado selección natural. Los individuos con características que les permiten sobrevivir y reproducirse mejor en su ambiente transmiten esas características a su descendencia. Con el tiempo, estos pequeños cambios acumulados pueden producir nuevas especies. Darwin recopiló evidencias fundamentales en las Islas Galápagos, donde observó cómo distintas especies de pinzones habían desarrollado picos muy diferentes, cada uno perfectamente adaptado a la fuente de alimento de su isla. La teoría evolucionista no solo explicaba la diversidad de la vida, sino que establecía que el ser humano comparte antepasados comunes con todos los seres vivos. Esta idea, continúa siendo una de las más importantes y mejor respaldadas de la historia de la ciencia, confirmada por la paleontología, la genética y la biología molecular.',
+ qs:[
+  {q:'¿En qué año publicó Darwin "El origen de las especies"?',o:['1776','1842','1859','1905'],c:2},
+  {q:'¿Dónde observó Darwin evidencias clave para su teoría?',o:['África del Sur','Las Islas Galápagos','La Amazonía','Australia'],c:1},
+  {q:'¿Qué observó en los pinzones de las Galápagos?',o:['Distintos colores de plumaje','Distintos tamaños corporales','Picos diferentes adaptados al alimento disponible','Comportamientos migratorios diferentes'],c:2},
+  {q:'¿Qué confirma actualmente la teoría de la evolución?',o:['Solo los fósiles','Solo la observación directa','La paleontología, la genética y la biología molecular','Solo experimentos de laboratorio'],c:2}
+ ]},
+{id:'sapiens',title:'Homo Sapiens: la especie que conquistó el mundo',author:'Texto de antropología curado',lang:'es',cat:'ciencia',
+ ico:'🦴',bg:'rgba(245,200,66,0.07)',rat:'4.9',dif:'Fácil',wpm:260,
+ text:'Hace unos trescientos mil años, el Homo sapiens apareció en África. Durante cientos de miles de años fue una especie más entre muchas, cazando y recolectando al igual que los neandertales o el Homo erectus. Entonces, hace aproximadamente setenta mil años, algo extraordinario ocurrió: lo que los científicos llaman la Revolución Cognitiva. El cerebro humano desarrolló la capacidad única de crear y creer en ficciones compartidas: mitos, religiones, leyes, naciones, dinero. Esta habilidad para cooperar a gran escala basándose en relatos colectivos fue lo que distinguió al Homo sapiens de todas las demás especies. Mientras un chimpancé no puede convencer a otro de un concepto abstracto, los humanos podemos construir catedrales, sistemas legales y empresas multinacionales basándonos en ideas que existen solo en nuestra imaginación colectiva. Esta capacidad de colaborar con millones de desconocidos en torno a relatos compartidos es, según muchos investigadores, la razón principal por la que nuestra especie dominó el planeta.',
+ qs:[
+  {q:'¿Cuándo y dónde apareció el Homo sapiens?',o:['Hace 1 millón de años en Asia','Hace 300.000 años en África','Hace 50.000 años en Europa','Hace 10.000 años en América'],c:1},
+  {q:'¿Qué fue la "Revolución Cognitiva"?',o:['El descubrimiento del fuego','La aparición del lenguaje oral simple','La capacidad de crear y creer en ficciones compartidas','El desarrollo de herramientas de piedra'],c:2},
+  {q:'¿Qué distingue al Homo sapiens de otras especies según el texto?',o:['Su fuerza física superior','Su tamaño cerebral absoluto','Su longevidad','Su capacidad de cooperar a gran escala con desconocidos'],c:3},
+  {q:'¿Qué ejemplo se da de "ficción compartida" humana?',o:['La capacidad de cocinar','El lenguaje oral','El dinero, las leyes y las naciones','La caza cooperativa'],c:2}
+ ]}
+];
+
+const TIPS=[
+  'La regresión ocular puede reducir tu velocidad hasta un 30%. Avanza siempre sin volver atrás.',
+  'Practicar 15 minutos al día es más efectivo que 2 horas una vez a la semana.',
+  'El "recall activo" consolida la memoria mucho mejor que releer el texto.',
+  'La fatiga visual reduce la comprensión. Haz la pausa 20-20-20 cada 20 minutos.',
+  'Ampliar el vocabulario mejora automáticamente tu velocidad de comprensión.',
+  'El cerebro consolida mejor lo aprendido durante el sueño; lee antes de dormir.',
+  'Hacer predicciones sobre el texto antes de leerlo mejora la retención.',
+  'Buena postura e iluminación adecuada reducen el cansancio ocular hasta un 40%.'
+];
+
+const EYES_EX=[
+  {ico:'🏔️',name:'Regla 20-20-20',det:'Mira un punto lejano, relaja la vista por completo',dur:20,anim:'far',instr:'Enfoca algo a 6 metros de distancia y respira despacio'},
+  {ico:'∞',name:'Movimiento en Ocho',det:'Sigue el punto con los ojos sin mover la cabeza',dur:30,anim:'eight',instr:'Traza un 8 horizontal con los ojos, suavemente'},
+  {ico:'🔍',name:'Convergencia',det:'Sigue el punto acercándose y alejándose',dur:30,anim:'conv',instr:'Mantén el punto enfocado a medida que cambia de tamaño'},
+  {ico:'⭕',name:'Rotación circular',det:'Mueve los ojos en círculos amplios y lentos',dur:25,anim:'circ',instr:'Traza círculos completos con los ojos, sin mover la cabeza'},
+  {ico:'🤲',name:'Palming — Relajación',det:'Cubre los ojos con las palmas, oscuridad total',dur:30,anim:'palm',instr:'Coloca tus palmas sobre los ojos cerrados. Oscuridad y silencio. Respira.'}
+];
+
+/* ══════════════════════════════════════════
+   ESTADO DE LA APP
+══════════════════════════════════════════ */
+let scr='home';
+let R={textId:null,words:[],idx:0,wpm:250,playing:false,ivl:null,done:false};
+let C={textId:null,ans:{},sent:false};
+let E={idx:-1,phase:'menu',ivl:null,t:0};
+let LF={lang:'all',search:''};
+
+/* ══════════════════════════════════════════
+   PROGRESO (localStorage)
+══════════════════════════════════════════ */
+function lp(){
+  try{return JSON.parse(localStorage.getItem('lm2')||'null')||{sess:[],comp:[],texts:[],eyes:0,lastDay:null,streak:0};}
+  catch{return{sess:[],comp:[],texts:[],eyes:0,lastDay:null,streak:0};}
+}
+function sp(p){try{localStorage.setItem('lm2',JSON.stringify(p));}catch{}}
+function gp(){return lp();}
+
+function checkStreak(){
+  const p=gp(),td=new Date().toDateString(),yd=new Date(Date.now()-86400000).toDateString();
+  if(p.lastDay!==td){
+    if(p.lastDay===yd)p.streak=(p.streak||0)+1;
+    else if(p.lastDay!==td)p.streak=1;
+    p.lastDay=td;sp(p);
+  }
+  document.getElementById('streakEl').textContent=`🔥 ${p.streak} día${p.streak!==1?'s':''}`;
+}
+function recSess(wpm,tid){const p=gp();p.sess.push({d:new Date().toDateString(),wpm,tid});if(!p.texts.includes(tid))p.texts.push(tid);checkStreak();sp(p);}
+function recComp(sc,tid){const p=gp();p.comp.push({d:new Date().toDateString(),sc,tid});sp(p);}
+
+/* ══════════════════════════════════════════
+   NAVEGACIÓN
+══════════════════════════════════════════ */
+function go(s,data){
+  if(R.ivl){clearInterval(R.ivl);R.ivl=null;R.playing=false;}
+  if(E.ivl){clearInterval(E.ivl);E.ivl=null;}
+  if(s!=='eyes')E={idx:-1,phase:'menu',ivl:null,t:0};
+  if(s!=='rsvp'&&s!=='comp'){R={textId:null,words:[],idx:0,wpm:R.wpm,playing:false,ivl:null,done:false};}
+  if(s!=='comp')C={textId:null,ans:{},sent:false};
+  if(data){if(s==='comp')C.textId=data; if(s==='rsvp')startRSVP(data);}
+  scr=s;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const nm={home:'home',rsvp:'rsvp',comp:'rsvp',eyes:'eyes',lib:'lib',prog:'prog'};
+  const nb=document.getElementById('nb-'+(nm[s]||s));
+  if(nb)nb.classList.add('active');
+  document.getElementById('main').innerHTML='';
+  const d=document.createElement('div');
+  d.className='screen-in';
+  const rs={home:rHome,rsvp:rRSVP,comp:rComp,eyes:rEyes,lib:rLib,prog:rProg};
+  d.innerHTML=(rs[scr]||rHome)();
+  document.getElementById('main').appendChild(d);
+  document.getElementById('main').scrollTop=0;
+}
+
+/* ══════════════════════════════════════════
+   HOME
+══════════════════════════════════════════ */
+function rHome(){
+  const p=gp();
+  const awpm=p.sess.length?Math.round(p.sess.reduce((a,b)=>a+b.wpm,0)/p.sess.length):0;
+  const ac=p.comp.length?Math.round(p.comp.reduce((a,b)=>a+b.sc,0)/p.comp.length):0;
+  const tip=TIPS[new Date().getDay()%TIPS.length];
+  return`
+<div class="greeting" style="margin-bottom:16px">
+  <h2>¡Bienvenido, Cristian!</h2>
+  <p>Practica 15 minutos hoy para mantener tu racha 🔥</p>
+</div>
+<div class="stats">
+  <div class="stat"><div class="sv">${awpm||'—'}</div><div class="sl">WPM promedio</div></div>
+  <div class="stat"><div class="sv">${ac?ac+'%':'—'}</div><div class="sl">Comprensión</div></div>
+  <div class="stat"><div class="sv">${p.texts.length}</div><div class="sl">Textos leídos</div></div>
+</div>
+<div class="sec">Módulos de entrenamiento</div>
+<div class="modules">
+  <div class="mod full hero" onclick="go('rsvp')">
+    <div class="mod-icon">⚡</div>
+    <div class="mod-name">Entrenador RSVP</div>
+    <div class="mod-desc">Lectura serial visual: palabras una por una a ritmo controlado. Elimina la regresión ocular y aumenta tu velocidad progresivamente.</div>
+  </div>
+  <div class="mod" onclick="go('comp')">
+    <div class="mod-icon">🧠</div>
+    <div class="mod-name">Comprensión</div>
+    <div class="mod-desc">Recall activo con preguntas después de leer</div>
+  </div>
+  <div class="mod" onclick="go('eyes')">
+    <div class="mod-icon">👁️</div>
+    <div class="mod-name">Ojos</div>
+    <div class="mod-desc">Rutina de 5 min, respaldo clínico</div>
+  </div>
+</div>
+<div class="tip">
+  <div class="tip-lbl">💡 Consejo del día</div>
+  <div class="tip-txt">"${tip}"</div>
+</div>`;
+}
+
+/* ══════════════════════════════════════════
+   RSVP
+══════════════════════════════════════════ */
+function rRSVP(){
+  const p=gp();
+  if(!R.textId){
+    return`
+<div class="back-row"><div><div class="title">Entrenador RSVP</div><div class="sub" style="color:var(--text2);font-size:12px">Elige un texto y ajusta tu velocidad</div></div></div>
+<div class="wpm-row card" style="margin-bottom:16px">
+  <div class="wpm-lbl"><span>Velocidad inicial</span><span id="wD">${R.wpm} WPM</span></div>
+  <input type="range" min="80" max="600" value="${R.wpm}" step="10" oninput="R.wpm=+this.value;document.getElementById('wD').textContent=this.value+' WPM'">
+  <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:4px"><span>80 lento</span><span>250 normal</span><span>600 rápido</span></div>
+</div>
+<div class="sec">Selecciona un texto</div>
+${TX.map(t=>`
+<div class="text-opt" onclick="startRSVP('${t.id}')">
+  <div><div class="tot">${t.title}${p.texts.includes(t.id)?'<span class="done-badge">✓ Leído</span>':''}</div><div class="toa">${t.author} · ${t.dif} · ${t.wpm} WPM sugerido</div></div>
+  <span class="tag tag-${t.lang}">${t.lang==='es'?'🇪🇸':'🇮🇹'}</span>
+</div>`).join('')}`;
+  }
+  const tx=TX.find(t=>t.id===R.textId);
+  const pct=R.words.length?Math.round(R.idx/R.words.length*100):0;
+  const w=R.done?'':R.words[R.idx]||'';
+  const oi=Math.floor(w.length*0.35);
+  const wH=R.done?`<span style="color:var(--accent)">✓ Completado</span>`:`${w.slice(0,oi)}<span class="orp">${w[oi]||''}</span>${w.slice(oi+1)}`;
+  return`
+<div class="back-row">
+  <button class="back-btn" onclick="go('rsvp')">←</button>
+  <div><div class="title" style="font-size:15px;font-family:'Sora',sans-serif;font-weight:500">${tx.title}</div><div class="sub">${tx.author}</div></div>
+</div>
+<div class="rsvp-display">
+  <div class="rsvp-word" id="rW">${wH}</div>
+  <div class="rsvp-bar-wrap"><div class="rsvp-bar" id="rB" style="width:${pct}%"></div></div>
+  <div class="rsvp-meta">${R.idx} / ${R.words.length} palabras &nbsp;·&nbsp; ${R.wpm} WPM</div>
+</div>
+<div class="controls">
+  <button class="cb" onclick="rRst()" title="Reiniciar">↺</button>
+  <button class="cb" onclick="rBk()" title="Atrás">⏮</button>
+  <button class="cb play" id="pB" onclick="tgRSVP()">${R.playing?'⏸':'▶'}</button>
+  <button class="cb" onclick="rFw()" title="Adelante">⏭</button>
+</div>
+<div class="wpm-row">
+  <div class="wpm-lbl"><span>Velocidad</span><span id="wL">${R.wpm} WPM</span></div>
+  <input type="range" min="80" max="600" value="${R.wpm}" step="10" oninput="chW(this.value)">
+</div>
+${R.done?`
+<div class="card glow" style="text-align:center;padding:22px">
+  <div style="font-size:36px;margin-bottom:10px">🎉</div>
+  <div style="font-size:15px;font-weight:600;margin-bottom:4px">¡Lectura completada!</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:16px">Pon a prueba tu comprensión ahora</div>
+  <button class="btn btn-p" onclick="go('comp','${tx.id}')">Ir a preguntas de comprensión</button>
+  <button class="btn btn-s" onclick="go('rsvp')">Elegir otro texto</button>
+</div>`:''}`;
+}
+
+function startRSVP(tid){
+  const tx=TX.find(t=>t.id===tid);
+  R={textId:tid,words:tx.text.split(/\s+/).filter(w=>w),idx:0,wpm:R.wpm,playing:false,ivl:null,done:false};
+  go('rsvp');
+  setTimeout(()=>tgRSVP(),400);
+}
+
+function tgRSVP(){
+  if(R.done)return;
+  if(R.playing){clearInterval(R.ivl);R.ivl=null;R.playing=false;const b=document.getElementById('pB');if(b)b.textContent='▶';}
+  else{
+    R.playing=true;const b=document.getElementById('pB');if(b)b.textContent='⏸';
+    const ms=60000/R.wpm;
+    R.ivl=setInterval(()=>{
+      if(R.idx>=R.words.length-1){clearInterval(R.ivl);R.ivl=null;R.playing=false;R.done=true;recSess(R.wpm,R.textId);toast(`¡Completado a ${R.wpm} WPM! 🎉`);go('rsvp');return;}
+      R.idx++;upRSVP();
+    },ms);
+  }
+}
+
+function upRSVP(){
+  const wE=document.getElementById('rW'),bE=document.getElementById('rB');if(!wE)return;
+  const w=R.words[R.idx]||'',oi=Math.floor(w.length*0.35);
+  wE.style.opacity=0;
+  setTimeout(()=>{wE.innerHTML=`${w.slice(0,oi)}<span class="orp">${w[oi]||''}</span>${w.slice(oi+1)}`;wE.style.opacity=1;},35);
+  if(bE)bE.style.width=Math.round(R.idx/R.words.length*100)+'%';
+}
+
+function chW(v){R.wpm=+v;document.getElementById('wL').textContent=v+' WPM';if(R.playing){clearInterval(R.ivl);R.ivl=null;R.playing=false;setTimeout(tgRSVP,50);}}
+function rBk(){if(R.idx>5)R.idx-=5;else R.idx=0;if(!R.playing)upRSVP();}
+function rFw(){if(R.idx<R.words.length-6)R.idx+=5;if(!R.playing)upRSVP();}
+function rRst(){clearInterval(R.ivl);R.ivl=null;R.playing=false;R.idx=0;R.done=false;go('rsvp');}
+
+/* ══════════════════════════════════════════
+   COMPRENSIÓN
+══════════════════════════════════════════ */
+function rComp(){
+  const p=gp();
+  if(!C.textId){
+    return`
+<div class="back-row"><div><div class="title">Comprensión activa</div><div class="sub" style="color:var(--text2);font-size:12px">Lee el fragmento y responde preguntas</div></div></div>
+<div class="sec">Selecciona un texto</div>
+${TX.map(t=>`
+<div class="text-opt" onclick="go('comp','${t.id}')">
+  <div><div class="tot">${t.title}${p.texts.includes(t.id)?'<span class="done-badge">✓ Leído</span>':''}</div><div class="toa">${t.author}</div></div>
+  <span class="tag tag-${t.lang}">${t.lang==='es'?'🇪🇸':'🇮🇹'}</span>
+</div>`).join('')}`;
+  }
+  const tx=TX.find(t=>t.id===C.textId);
+  if(C.sent){
+    const ok=tx.qs.filter((q,i)=>C.ans[i]===q.c).length;
+    const sc=Math.round(ok/tx.qs.length*100);
+    return`
+<div class="back-row">
+  <button class="back-btn" onclick="go('comp')">←</button>
+  <div class="title">Resultados</div>
+</div>
+<div class="score-box">
+  <div class="score-n">${sc}%</div>
+  <div class="score-l">${ok} de ${tx.qs.length} respuestas correctas</div>
+  <div class="score-msg">${sc>=80?'🎉 ¡Excelente comprensión!':sc>=60?'💪 Buen trabajo, sigue practicando':'📖 Intenta releer el texto e inténtalo de nuevo'}</div>
+</div>
+${tx.qs.map((q,i)=>`
+<div class="q-card">
+  <div class="q-num">Pregunta ${i+1}</div>
+  <div class="q-txt">${q.q}</div>
+  <div class="opts">
+    ${q.o.map((o,j)=>`<div class="opt ${j===q.c?'ok':(C.ans[i]===j&&j!==q.c?'bad':'')}">${j===q.c?'✓ ':C.ans[i]===j?'✗ ':''}${o}</div>`).join('')}
+  </div>
+</div>`).join('')}
+<button class="btn btn-p" onclick="go('comp')">Practicar con otro texto</button>
+<button class="btn btn-s" onclick="go('home')">Volver al inicio</button>`;
+  }
+  return`
+<div class="back-row">
+  <button class="back-btn" onclick="go('comp')">←</button>
+  <div><div class="title" style="font-size:15px;font-family:'Sora',sans-serif;font-weight:500">${tx.title}</div><div class="sub">${tx.author}</div></div>
+</div>
+<div class="read-box">
+  <div class="read-hdr">📖 Lee con atención — sin prisa</div>
+  ${tx.text}
+</div>
+<div class="sec">Preguntas de comprensión</div>
+${tx.qs.map((q,i)=>`
+<div class="q-card">
+  <div class="q-num">Pregunta ${i+1} de ${tx.qs.length}</div>
+  <div class="q-txt">${q.q}</div>
+  <div class="opts">
+    ${q.o.map((o,j)=>`<button class="opt ${C.ans[i]===j?'sel':''}" onclick="selA(${i},${j})">${o}</button>`).join('')}
+  </div>
+</div>`).join('')}
+<button class="btn btn-p" onclick="subC()" style="margin-top:8px">Ver resultados</button>
+<button class="btn btn-s" onclick="go('comp')">Cancelar</button>`;
+}
+
+function selA(qi,oi){C.ans[qi]=oi;go('comp',C.textId);}
+function subC(){
+  const tx=TX.find(t=>t.id===C.textId);
+  if(Object.keys(C.ans).length<tx.qs.length){toast(`Responde todas (${Object.keys(C.ans).length}/${tx.qs.length})`);return;}
+  C.sent=true;
+  const ok=tx.qs.filter((q,i)=>C.ans[i]===q.c).length;
+  recComp(Math.round(ok/tx.qs.length*100),C.textId);
+  go('comp',C.textId);
+}
+
+/* ══════════════════════════════════════════
+   OJOS
+══════════════════════════════════════════ */
+function rEyes(){
+  if(E.phase==='menu'){
+    return`
+<div class="back-row"><div><div class="title">Ejercicios oculares</div><div class="sub" style="color:var(--text2);font-size:12px">Rutina de ~5 min para reducir fatiga visual</div></div></div>
+<div class="card glow" style="text-align:center;padding:20px;margin-bottom:16px">
+  <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Duración total aproximada</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:42px;color:var(--accent)">5 min</div>
+  <div style="font-size:11px;color:var(--muted)">${EYES_EX.length} ejercicios · Respaldo clínico (regla 20-20-20, convergencia)</div>
+</div>
+<div class="sec">Ejercicios incluidos</div>
+<div class="ex-list">
+${EYES_EX.map((e,i)=>`
+<div class="ex-item">
+  <div class="ex-ico">${e.ico}</div>
+  <div><div class="ex-nm">${e.name}</div><div class="ex-dt">${e.det} · ${e.dur}s</div></div>
+</div>`).join('')}
+</div>
+<button class="btn btn-p" onclick="startEyes()">Comenzar rutina</button>`;
+  }
+  if(E.phase==='done'){
+    const p=gp();p.eyes=(p.eyes||0)+1;sp(p);
+    return`
+<div style="text-align:center;padding:50px 20px">
+  <div style="font-size:56px;margin-bottom:16px">✨</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;margin-bottom:8px">¡Rutina completada!</div>
+  <div style="font-size:13px;color:var(--text2);margin-bottom:30px">Tus ojos te lo agradecerán.<br>Repite cada vez que sientas fatiga visual.</div>
+  <button class="btn btn-p" onclick="E.phase='menu';go('eyes')">Repetir rutina</button>
+  <button class="btn btn-s" onclick="go('home')">Volver al inicio</button>
+</div>`;
+  }
+  const ex=EYES_EX[E.idx];
+  let dotH='';
+  if(ex.anim==='far')dotH=`<div class="eye-far">🏔️</div>`;
+  else dotH=`<div class="dot ${ex.anim}"></div>`;
+  return`
+<div class="back-row">
+  <div><div class="title">Ejercicios oculares</div><div class="sub">Ejercicio ${E.idx+1} de ${EYES_EX.length}</div></div>
+</div>
+<div class="eye-box">
+  <div class="eye-instr">${ex.name}</div>
+  ${dotH}
+  <div class="eye-sub">${ex.instr}</div>
+</div>
+<div class="timer-big" id="eT">${E.t}</div>
+<div class="timer-sub">segundos restantes</div>
+<div class="ex-list">
+${EYES_EX.map((e,i)=>`
+<div class="ex-item ${i===E.idx?'cur':''} ${i<E.idx?'done-ex':''}">
+  <div class="ex-ico">${e.ico}</div>
+  <div><div class="ex-nm">${e.name}</div><div class="ex-dt">${e.dur}s</div></div>
+  <span class="ex-st ${i===E.idx?'a':i<E.idx?'d':''}">${i===E.idx?'▶ Activo':i<E.idx?'✓':'○'}</span>
+</div>`).join('')}
+</div>
+<button class="btn btn-s" onclick="skipEye()">Saltar ejercicio</button>`;
+}
+
+function startEyes(){E.idx=0;E.phase='ex';E.t=EYES_EX[0].dur;go('eyes');runEyeTimer();}
+function runEyeTimer(){
+  if(E.ivl)clearInterval(E.ivl);
+  E.ivl=setInterval(()=>{
+    E.t--;const el=document.getElementById('eT');if(el)el.textContent=E.t;
+    if(E.t<=0){clearInterval(E.ivl);E.ivl=null;E.idx++;
+      if(E.idx>=EYES_EX.length){E.phase='done';go('eyes');}
+      else{E.t=EYES_EX[E.idx].dur;toast(EYES_EX[E.idx].name);go('eyes');runEyeTimer();}
+    }
+  },1000);
+}
+function skipEye(){if(E.ivl)clearInterval(E.ivl);E.idx++;if(E.idx>=EYES_EX.length){E.phase='done';go('eyes');}else{E.t=EYES_EX[E.idx].dur;go('eyes');runEyeTimer();}}
+
+/* ══════════════════════════════════════════
+   BIBLIOTECA
+══════════════════════════════════════════ */
+function rLib(){
+  const p=gp();
+  let fx=TX;
+  if(LF.lang!=='all')fx=fx.filter(t=>t.lang===LF.lang);
+  if(LF.search)fx=fx.filter(t=>t.title.toLowerCase().includes(LF.search.toLowerCase())||t.author.toLowerCase().includes(LF.search.toLowerCase()));
+  const catTag={literatura:'tag-lit',letteratura:'tag-lit',ciencia:'tag-sci',filosofia:'tag-phi',storia:'tag-his'};
+  const catLbl={literatura:'Literatura',letteratura:'Letteratura',ciencia:'Ciencia',filosofia:'Filosofía',storia:'Storia'};
+  return`
+<div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;margin-bottom:14px">Biblioteca</div>
+<div class="search">
+  <span>🔍</span>
+  <input type="text" placeholder="Buscar título o autor..." value="${LF.search}" oninput="LF.search=this.value;go('lib')">
+</div>
+<div class="chips">
+  <button class="chip ${LF.lang==='all'?'on':''}" onclick="LF.lang='all';go('lib')">🌐 Todos</button>
+  <button class="chip ${LF.lang==='es'?'on':''}" onclick="LF.lang='es';go('lib')">🇪🇸 Español</button>
+  <button class="chip ${LF.lang==='it'?'on':''}" onclick="LF.lang='it';go('lib')">🇮🇹 Italiano</button>
+</div>
+${fx.length===0?'<div style="text-align:center;color:var(--muted);padding:40px">No se encontraron textos</div>':
+  fx.map(t=>`
+<div class="bk" onclick="go('comp','${t.id}')">
+  <div class="bk-cov" style="background:${t.bg}">${t.ico}</div>
+  <div>
+    <div class="bk-tit">${t.title}${p.texts.includes(t.id)?'<span class="done-badge">✓</span>':''}</div>
+    <div class="bk-aut">${t.author}</div>
+    <div class="bk-meta">
+      <span class="tag ${catTag[t.cat]||'tag-sci'}">${catLbl[t.cat]||t.cat}</span>
+      <span class="tag tag-${t.lang}">${t.lang==='es'?'🇪🇸 ES':'🇮🇹 IT'}</span>
+      <span class="bk-rat">⭐ ${t.rat}</span>
+    </div>
+  </div>
+</div>`).join('')}`;
+}
+
+/* ══════════════════════════════════════════
+   PROGRESO
+══════════════════════════════════════════ */
+function rProg(){
+  const p=gp();
+  const awpm=p.sess.length?Math.round(p.sess.reduce((a,b)=>a+b.wpm,0)/p.sess.length):0;
+  const ac=p.comp.length?Math.round(p.comp.reduce((a,b)=>a+b.sc,0)/p.comp.length):0;
+  const tmin=p.sess.length*10+(p.eyes||0)*5;
+  const today=new Date(),days=['D','L','M','X','J','V','S'];
+  const w7=Array.from({length:7},(_,i)=>{
+    const d=new Date(today);d.setDate(d.getDate()-(6-i));
+    const ds=d.toDateString();
+    const s=p.sess.filter(s=>s.d===ds);
+    return{day:days[d.getDay()],wpm:s.length?Math.round(s.reduce((a,b)=>a+b.wpm,0)/s.length):0,td:i===6};
+  });
+  const mx=Math.max(...w7.map(d=>d.wpm),100);
+  const w28=Array.from({length:28},(_,i)=>{
+    const d=new Date(today);d.setDate(d.getDate()-(27-i));const ds=d.toDateString();
+    return{td:i===27,done:p.sess.some(s=>s.d===ds)||p.comp.some(s=>s.d===ds)};
+  });
+  const ACH=[
+    {ico:'🔥',nm:'Primera semana',ds:'Mantén una racha de 7 días',done:p.streak>=7,cur:p.streak,tot:7},
+    {ico:'⚡',nm:'Lector ágil',ds:'Supera los 300 WPM promedio',done:awpm>=300,cur:awpm,tot:300},
+    {ico:'🧠',nm:'Comprensión plena',ds:'Promedio de comprensión ≥ 80%',done:ac>=80,cur:ac,tot:80},
+    {ico:'📚',nm:'Explorador',ds:'Lee 5 textos diferentes',done:p.texts.length>=5,cur:p.texts.length,tot:5},
+    {ico:'👁️',nm:'Ojos sanos',ds:'Completa 10 rutinas oculares',done:(p.eyes||0)>=10,cur:p.eyes||0,tot:10},
+    {ico:'🎓',nm:'Polímata',ds:`Lee los ${TX.length} textos disponibles`,done:p.texts.length>=TX.length,cur:p.texts.length,tot:TX.length}
+  ];
+  return`
+<div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;margin-bottom:18px">Mi progreso</div>
+<div class="pg-grid">
+  <div class="pg-card"><div class="pg-lbl">Velocidad promedio</div><div class="pg-val">${awpm||'—'} <span class="pg-unit">WPM</span></div></div>
+  <div class="pg-card"><div class="pg-lbl">Comprensión media</div><div class="pg-val">${ac?ac+'%':'—'}</div></div>
+  <div class="pg-card"><div class="pg-lbl">Tiempo practicado</div><div class="pg-val">${tmin} <span class="pg-unit">min</span></div></div>
+  <div class="pg-card"><div class="pg-lbl">Racha actual</div><div class="pg-val">${p.streak} <span class="pg-unit">días</span></div></div>
+</div>
+<div class="chart-card">
+  <div class="ch-lbl">Velocidad esta semana (WPM)</div>
+  <div class="bars">
+    ${w7.map(d=>`<div class="bc"><div class="bf ${d.td?'td':''}" style="height:${d.wpm?Math.max(8,Math.round(d.wpm/mx*80)):4}px;opacity:${d.wpm?1:0.25}"></div><div class="bl" style="${d.td?'color:var(--accent)':''}">${d.day}</div></div>`).join('')}
+  </div>
+</div>
+<div class="chart-card">
+  <div class="ch-lbl">Constancia — Últimas 4 semanas</div>
+  <div class="str-grid">
+    ${w28.map(d=>`<div class="sc ${d.td?'td':d.done?'d':''}">${d.td?'●':d.done?'✓':''}</div>`).join('')}
+  </div>
+</div>
+<div class="sec">Logros</div>
+<div class="ach-list">
+${ACH.map(a=>`
+<div class="ach ${a.done?'':'lk'}">
+  <div class="ach-ico">${a.ico}</div>
+  <div style="flex:1">
+    <div class="ach-nm">${a.nm}</div>
+    <div class="ach-ds">${a.ds}</div>
+    ${!a.done?`<div class="pb-wrap"><div class="pb-fill" style="width:${Math.min(100,Math.round(a.cur/a.tot*100))}%"></div></div>`:''}
+  </div>
+  <div class="ach-st ${a.done?'ok':'no'}">${a.done?'✅':`${a.cur}/${a.tot}`}</div>
+</div>`).join('')}
+</div>`;
+}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),2500);
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+checkStreak();
+go('home');
+</script>
+</body>
+</html>
